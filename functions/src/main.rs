@@ -1,7 +1,7 @@
 /*
     when we add a semicolon at the end of an expression, it turns it into a statement, and statements do not return values.
 
-    because statements do not evaluate to a value, is expressed by `()` the unit type. therefore nothing is returned 
+    because statements do not evaluate to a value, this is expressed by `()` the unit type. therefore nothing is returned 
 */
 fn main() {
     println!("Hello Functions!");
