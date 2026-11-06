@@ -7,7 +7,7 @@ in the code explaining the reason. Your original code stays untouched on `master
 
 ```powershell
 git log --oneline master..recomendations   # one commit per project
-git diff master recomendations -- fibonacci # compare one project
+git diff master recomendations -- 08-ch03-fibonacci # compare one project
 git switch recomendations                   # try the code
 git switch master                           # back to your version
 ```
@@ -39,7 +39,7 @@ cargo test       # runs the tests (Chapter 11)
 ```
 
 Clippy found 2 issues in your `master` code (late initialization in
-`variables`, needless `return` in `fibonacci`). After `cargo fmt`, the diffs
+`variables`, needless `return` in `fibonacci`). You've since fixed both. After `cargo fmt`, the diffs
 on this branch are only real changes.
 
 ## Repo hygiene
@@ -57,4 +57,4 @@ on this branch are only real changes.
 
 - `hello_world`, `hello_cargo`: nothing to improve.
 - Rustlings: compare your answers with the official ones in
-  `rslings/rustlings/solutions/` after you finish each exercise.
+  `rustlings/solutions/` after you finish each exercise.
