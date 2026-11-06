@@ -1,6 +1,6 @@
-// Rustaceans prefer us FOR
+// Rustaceans prefer `for` over `while` with an index: there's no counter to
+// update, so you can't go out of bounds or forget an element.
 fn main() {
-
     // Just a simple if statement
     let number = 5;
 
@@ -10,7 +10,7 @@ fn main() {
         println!("Condition was false");
     }
 
-    // `if` is a Expression, which means it evaluates to a value. We can use that value to assign a variable.
+    // `if` is an expression, which means it evaluates to a value. We can use that value to assign a variable.
     let condition = true;
     let number = if condition { 5 } else { 6 };
 
@@ -32,7 +32,7 @@ fn main() {
 
     println!();
 
-    // Disambiguating with loops labels
+    // Disambiguating with loop labels
     let mut count = 0;
 
     'counting_up: loop {
@@ -50,7 +50,7 @@ fn main() {
                 break 'counting_up;
             }
 
-            remaining -=1;
+            remaining -= 1;
         }
 
         count += 1;
@@ -71,6 +71,8 @@ fn main() {
     println!();
 
     // Looping Through a Collection with while
+    // WHY the book shows this: it works, but it's fragile. Change the array to
+    // 4 elements and `array[index]` panics at runtime. The `for` below can't.
     let array = [10, 20, 30, 40, 50];
     let mut index = 0;
 
