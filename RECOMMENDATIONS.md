@@ -44,9 +44,10 @@ on this branch are only real changes.
 
 ## Repo hygiene
 
-- **Line endings:** `primitive_types3.rs` shows as modified on `master` only
-  because an editor changed LF to CRLF. Add a `.gitattributes` with
-  `* text=auto eol=lf` to stop this.
+- **Line endings (optional):** your Windows Git converts LF <-> CRLF
+  automatically (`core.autocrlf`), so `git status` is clean on your machine.
+  Other tools (Linux, CI, a WSL shell) see the CRLF files as modified. A
+  `.gitattributes` with `* text=auto eol=lf` makes it consistent everywhere.
 - **Commit messages:** describe what you did. "Refactor variable exercises..."
   was really "rustlings: complete variables 1–6".
 - **Later (optional):** a Cargo workspace (one root `Cargo.toml` listing the
