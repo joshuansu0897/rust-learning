@@ -1,38 +1,61 @@
+// The biggest n whose Fibonacci number still fits in a u64.
+// fib(93) = 12_200_160_415_121_876_738; fib(94) is bigger than u64::MAX.
+const MAX_N: u32 = 93;
+
 fn main() {
-    println!("The {} fibonacci is: {}", 0, fibonacci(0));
-    println!("The {} fibonacci is: {}", 1, fibonacci(1));
-    println!("The {} fibonacci is: {}", 2, fibonacci(2));
-    println!("The {} fibonacci is: {}", 3, fibonacci(3));
-    println!("The {} fibonacci is: {}", 4, fibonacci(4));
-    println!("The {} fibonacci is: {}", 5, fibonacci(5));
-    println!("The {} fibonacci is: {}", 6, fibonacci(6));
-    println!("The {} fibonacci is: {}", 7, fibonacci(7));
-    println!("The {} fibonacci is: {}", 8, fibonacci(8));
-    println!("The {} fibonacci is: {}", 9, fibonacci(9));
-    println!("The {} fibonacci is: {}", 10, fibonacci(10));
+    // WHY: one loop instead of 11 copied println! lines.
+    for n in 0..=10 {
+        println!("The {n} fibonacci is: {}", fibonacci(n));
+    }
+
+    println!("The {MAX_N} fibonacci is: {}", fibonacci(MAX_N));
 }
 
-fn fibonacci(mut n: i32) -> i32 {
-
-    if n <= 0 {
+/// Returns the nth Fibonacci number: fib(0) = 0, fib(1) = 1.
+///
+/// Works for n up to MAX_N (93). Beyond that the result does not fit in a u64,
+/// so a debug build panics with "attempt to add with overflow".
+//
+// WHY these types:
+// - `n: u32`: negative positions don't exist, so let the type forbid them.
+//   Your `if n <= 0` check disappears: the compiler does it for you.
+// - `-> u64`: an i32 overflows at fib(47); a u64 reaches fib(93).
+fn fibonacci(n: u32) -> u64 {
+    if n == 0 {
         return 0;
     }
 
-    if n == 1 {
-        return 1;
+    // WHY: a tuple keeps the pair together, and the tuple assignment below
+    // updates both at once, so the `tmp` variable is no longer needed.
+    let (mut previous, mut current): (u64, u64) = (0, 1);
+
+    // WHY: `for` over a range instead of `while n > 1 { ... n -= 1 }`.
+    // No counter to mutate, no off-by-one risk. `_` means "I don't need the
+    // loop variable".
+    for _ in 1..n {
+        (previous, current) = (current, previous + current);
     }
 
-    let mut num1 = 0;
-    let mut num2 = 1;
+    // WHY: the last expression is the return value. No `return`, no `;`.
+    current
+}
 
-    let mut tmp = 0;
+// Tests run with `cargo test`. You'll learn them in Chapter 11; for now,
+// notice how they document what the function promises.
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    while n > 1 {
-        tmp = num1 + num2;
-        num1 = num2;
-        num2 = tmp;
-        n -= 1;
+    #[test]
+    fn first_numbers() {
+        assert_eq!(fibonacci(0), 0);
+        assert_eq!(fibonacci(1), 1);
+        assert_eq!(fibonacci(2), 1);
+        assert_eq!(fibonacci(10), 55);
     }
 
-    tmp
+    #[test]
+    fn biggest_that_fits_in_u64() {
+        assert_eq!(fibonacci(MAX_N), 12_200_160_415_121_876_738);
+    }
 }
