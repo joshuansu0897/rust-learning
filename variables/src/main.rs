@@ -8,8 +8,7 @@
     and when we leave the scope we go back to the previous value of x
  */
 fn main() {
-    let x;
-    x = 5;
+    let x = 5;
     println!("The value of x is: {x}");
 
     let x = x + 1;

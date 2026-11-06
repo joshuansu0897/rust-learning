@@ -34,5 +34,5 @@ fn fibonacci(mut n: i32) -> i32 {
         n -= 1;
     }
 
-    return tmp;
+    tmp
 }
