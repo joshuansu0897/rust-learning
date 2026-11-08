@@ -1,6 +1,6 @@
 # Recommendations (branch `recomendations`)
 
-Review of the Week 1 code (Chapters 1–3). Every change has a `// WHY:` comment
+Review of the Week 1 code (Chapters 1–3) and the Week 2 practice project (Chapter 4). Every change has a `// WHY:` comment
 in the code explaining the reason. Your original code stays untouched on `master`.
 
 ## How to study this branch
@@ -27,6 +27,24 @@ rewrite that improvement yourself on `master`. Don't just merge it.
 | fah_to_cel | `f64`, `9.0 / 5.0`, a small table, tests with tolerance | Never compare floats with `==` |
 | variables | `let x = 5;` instead of `let x; x = 5;`; shadowing vs `mut` type demo; a `const` | Clippy's "unneeded late initialization" |
 | control_flow, functions | Comments and `cargo fmt` only | Already idiomatic |
+
+## Week 2: `12-ch04-word_stats`
+
+Your version works (after the three bugs you fixed). This version keeps the
+same idea, byte loops and slices with no `split_whitespace`, but changes:
+
+| Change | Lesson |
+| --- | --- |
+| Checks `read_line` returning 0 and `break`s | **Bug fix:** Ctrl+Z / Ctrl+D looped forever on "TYPE A PHRASE!" |
+| `longest_word` remembers where each word *starts* and keeps the best word as a slice | No `acc` / `local_acc` / `index - local_acc` math, so the off-by-one can't happen |
+| Loops `0..=bytes.len()`, treating the end as one more separator | The last word is handled inside the loop, so there's no duplicated check after it |
+| `word_count` counts word *starts* | No `+ 1` at the end; an empty string gives 0 |
+| `is_ascii_whitespace()` instead of `== b' '` | Tabs separate words too |
+| One `String` buffer reused with `clear()` | Fewer allocations, and a real example of the 4.2 borrowing rules |
+| `///` doc comments, no comments that repeat the code | Comments say what a function promises, not what each line does |
+| `#[cfg(test)]` with a test per bug | `cargo test` catches the bugs you found by hand |
+
+Compare: `git diff master recomendations -- 12-ch04-word_stats`
 
 ## Habits that make code look professional
 

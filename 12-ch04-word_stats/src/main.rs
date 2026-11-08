@@ -1,106 +1,168 @@
-// Standard
 use std::io;
 
 fn main() {
-    // Tittle
     println!("##############################");
     println!("#         Word Stats!        #");
     println!("##############################");
-    println!();
+    println!("Type a phrase. To quit: Ctrl+Z then Enter (Windows) or Ctrl+D.\n");
 
-    // Request user input
+    // WHY one buffer outside the loop: `String::new()` inside the loop allocates
+    // a new String on every line. Reusing one and calling `clear()` keeps the
+    // same heap memory. `clear()` needs `&mut input`, and that's only allowed
+    // because `line` (a `&str` borrowed from `input`) is no longer used by then:
+    // the borrowing rules from 4.2 at work.
+    let mut input = String::new();
+
     loop {
-        println!("Please input your phrase: ");
-        let mut input = String::new();
+        println!("Please input your phrase:");
+        input.clear();
 
-        io::stdin()
+        let bytes_read = io::stdin()
             .read_line(&mut input)
             .expect("Failed to read line");
 
-        // Clean the input
-        let input = input.trim();
+        // WHY: `read_line` returns 0 when the input ends (Ctrl+Z / Ctrl+D).
+        // Without this check the loop never ends: the same bug the guessing
+        // game had.
+        if bytes_read == 0 {
+            println!("\nBye!");
+            break;
+        }
 
-        if input.is_empty() {
-            println!();
-            println!("TYPE A PHRASE!");
-            println!();
+        let line = input.trim();
+
+        if line.is_empty() {
+            println!("\nTYPE A PHRASE!\n");
             continue;
         }
 
-        let first = first_word(input);
-        let longest = longest_word(input);
-        let word_count: usize = word_count(input);
+        // WHY: no variable named `word_count`, so it doesn't shadow the
+        // function with the same name.
+        let first = first_word(line);
+        let longest = longest_word(line);
+        let count = word_count(line);
 
-        println!();
-        println!("first:'{first}', longest:'{longest}', how many words:'{word_count}'");
-        println!();
+        println!("\nfirst: '{first}', longest: '{longest}', how many words: {count}\n");
     }
 }
 
-fn first_word(s: &str) -> &str {
-    let str_bytes = s.as_bytes();
+// WHY `is_ascii_whitespace()` instead of `== b' '`: tabs and other spaces also
+// separate words, so "hi\tthere" is two words.
+//
+// WHY slicing by byte index is safe here: we only cut at ASCII whitespace
+// bytes, and those never appear inside a multi-byte character like `ñ`. So
+// `&s[..i]` never splits a character in half (that would panic).
 
-    for (index, &item) in str_bytes.iter().enumerate() {
-        if item == b' ' {
-            return &s[..index];
+/// Returns the first word of `s`, or all of `s` if it has no whitespace.
+fn first_word(s: &str) -> &str {
+    for (i, &byte) in s.as_bytes().iter().enumerate() {
+        if byte.is_ascii_whitespace() {
+            return &s[..i];
         }
     }
 
     s
 }
 
+/// Returns the longest word in `s`, measured in bytes. On a tie, the first
+/// one wins. Returns `""` if `s` has no words.
 fn longest_word(s: &str) -> &str {
-    let str_bytes = s.as_bytes();
+    let bytes = s.as_bytes();
 
-    let mut start_index = 0;
-    let mut end_index = str_bytes.len();
+    // WHY keep a slice instead of `acc`, `start_index` and `end_index`: the
+    // slice already knows its start and its length (`longest.len()`), so
+    // there's nothing to compute by hand.
+    let mut longest = "";
 
-    let mut acc = 0;
-    let mut local_acc = 0;
-    let mut last_was_space = false;
-    for (index, &item) in str_bytes.iter().enumerate() {
-        if item == b' ' && !last_was_space {
-            if local_acc > acc {
-                end_index = index;
-                start_index = index - local_acc;
-                acc = local_acc;
+    // WHY remember where the word *starts*: when the word ends at `i`, the word
+    // is simply `&s[word_start..i]`. No counter, no `index - local_acc`, so the
+    // off-by-one from bug 3 can't happen.
+    let mut word_start = 0;
+    let mut in_word = false;
+
+    // WHY `0..=bytes.len()` (one step past the end): that extra position acts
+    // as one more separator, so the last word is checked inside the loop and
+    // doesn't need a second copy of the comparison after it (bug 2).
+    for i in 0..=bytes.len() {
+        // `||` stops early: when `i == bytes.len()` it never reads `bytes[i]`,
+        // which would be out of bounds.
+        let at_separator = i == bytes.len() || bytes[i].is_ascii_whitespace();
+
+        if at_separator {
+            if in_word {
+                let word = &s[word_start..i];
+                // `>` (not `>=`) keeps the first word on a tie.
+                if word.len() > longest.len() {
+                    longest = word;
+                }
+                in_word = false;
             }
-
-            local_acc = 0;
-            last_was_space = true;
-        } else if item == b' ' && last_was_space {
-            continue;
-        } else {
-            last_was_space = false;
-            local_acc += 1;
+        } else if !in_word {
+            word_start = i;
+            in_word = true;
         }
     }
 
-    if local_acc > acc {
-        let last_index = str_bytes.len() - local_acc;
-        return &s[last_index..];
-    }
-
-    &s[start_index..end_index]
+    longest
 }
 
+/// Counts the words in `s`. Several spaces in a row count as one separator.
 fn word_count(s: &str) -> usize {
-    let str_bytes = s.as_bytes();
+    // WHY count the *starts* of words: a word starts at a letter that comes
+    // right after a separator (or at the very beginning). No `+ 1` at the end,
+    // and an empty string correctly gives 0.
+    let mut count = 0;
+    let mut in_word = false;
 
-    let mut acc = 0;
-    let mut last_was_space = false;
-    for &item in str_bytes.iter() {
-        if item == b' ' && !last_was_space {
-            acc += 1;
-
-            last_was_space = true;
-        } else if item == b' ' && last_was_space {
-            continue;
-        } else {
-            last_was_space = false;
+    for &byte in s.as_bytes() {
+        if byte.is_ascii_whitespace() {
+            in_word = false;
+        } else if !in_word {
+            count += 1;
+            in_word = true;
         }
     }
 
-    acc += 1;
-    acc
+    count
+}
+
+// Run with `cargo test` (Chapter 11). Every bug you fixed by hand has a test
+// here, so it can't come back.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn first_word_cases() {
+        assert_eq!(first_word("hello world"), "hello");
+        assert_eq!(first_word("hello"), "hello");
+        assert_eq!(first_word("hi\tthere"), "hi");
+    }
+
+    #[test]
+    fn longest_word_cases() {
+        assert_eq!(longest_word("hello"), "hello");
+        assert_eq!(longest_word("hi hello"), "hello"); // bug 2: last word
+        assert_eq!(longest_word("a bb ccc"), "ccc");
+        assert_eq!(longest_word("one two three four"), "three");
+        assert_eq!(longest_word("aa  bbbb c"), "bbbb"); // bug 3: no leading space
+        assert_eq!(longest_word("ab cd ef"), "ab"); // tie: first one wins
+        assert_eq!(longest_word("hi\tthere"), "there");
+        assert_eq!(longest_word(""), "");
+    }
+
+    #[test]
+    fn word_count_cases() {
+        assert_eq!(word_count("hello"), 1);
+        assert_eq!(word_count("one two three four"), 4);
+        assert_eq!(word_count("aa   b"), 2);
+        assert_eq!(word_count("hi\tthere friend"), 3);
+        assert_eq!(word_count(""), 0);
+    }
+
+    #[test]
+    fn non_ascii_letters_dont_panic() {
+        assert_eq!(first_word("ñandú es"), "ñandú");
+        assert_eq!(longest_word("ñandú es"), "ñandú"); // 7 bytes, not 5 letters
+    }
 }
