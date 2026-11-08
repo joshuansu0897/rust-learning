@@ -1,14 +1,14 @@
 // the known sizes types goes into the `stack` and popped off the `stack` when their scope is over
 
-
-fn main() { // `s` is not valid here since it's not yet declared
+fn main() {
+    // `s` is not valid here since it's not yet declared
     let _s = "string"; // `s` is valid from this point forward / this is a string literal, where the string value is hardcoded into our program / son immutables
 
     // do stuff with `s`
 
     let mut s2 = String::from("hello"); // this is a `heap` variable/value / this can be mutated
 
-    s2.push_str(", world!"); 
+    s2.push_str(", world!");
     println!("{s2}");
 
     // the difference between the literal and the String::from is in how these two types deal with memory
@@ -20,11 +20,12 @@ fn main() { // `s` is not valid here since it's not yet declared
     let _y = x;
 
     // ---
-    // A String is made up of three parts, shown on the left: a pointer to the memory that holds the contents of the string, a length, and a capacity. 
+    // A String is made up of three parts, shown on the left: a pointer to the memory that holds the contents of the string, a length, and a capacity.
     // This group of data is stored on the stack
     let s1 = String::from("hello");
     // When we assign s1 to s2, the String data is copied, meaning we copy the pointer, the length, and the capacity that are on the stack
-    let _s2 = s1;
+    let s2 = s1;
+    let _s3 = s2.clone();
 
     // if we remember Rust calls `drop` function at the closing curl brackets, this means right now we have two references to the same data in the heap
     // will try to free double the same data, that is a issue called `double free`
@@ -39,61 +40,134 @@ fn main() { // `s` is not valid here since it's not yet declared
 
     println!("{s}, world!");
 
-    let s = String::from("hello");  // s comes into scope
-    takes_ownership(s);             // s's value moves into the function...
-    //println!("{s}, world!");        // THIS WILL FAIL BECAUSE THE `s` OWNERSHIP GOES TO THE FUNCTION `s` IS NOT VALID HERE 
-                                    // ... and so is no longer valid here
-    let x = 5;                      // x comes into scope
-    makes_copy(x);                  // Because i32 implements the Copy trait,
-                                    // x does NOT move into the function,
-                                    // so it's okay to use x afterward.
+    let s = String::from("hello"); // s comes into scope
+    takes_ownership(s); // s's value moves into the function...
+    //println!("{s}, world!");        // THIS WILL FAIL BECAUSE THE `s` OWNERSHIP GOES TO THE FUNCTION `s` IS NOT VALID HERE
+    // ... and so is no longer valid here
+    let x = 5; // x comes into scope
+    makes_copy(x); // Because i32 implements the Copy trait,
+    // x does NOT move into the function,
+    // so it's okay to use x afterward.
 
+    let _s1 = gives_ownership(); // gives_ownership moves its return
+    // value into s1
 
-    let _s1 = gives_ownership();       // gives_ownership moves its return
-                                       // value into s1
-
-    let s2 = String::from("hello");    // s2 comes into scope
-    let _s3 = takes_and_gives_back(s2);// s2 is moved into
-                                       // takes_and_gives_back, which also
-                                       // moves its return value into s3
+    let s2 = String::from("hello"); // s2 comes into scope
+    let _s3 = takes_and_gives_back(s2); // s2 is moved into
+    // takes_and_gives_back, which also
+    // moves its return value into s3
 
     let s1 = String::from("hello");
     let (s2, len) = calculate_length(s1);
     println!("The length of '{s2}' is {len}.");
 
+    // ---
+
+    // borrowing
+    let s1 = String::from("hello");
+    let _len = calculate_length_ref(&s1);
+
+    // mutable reference/borrowing
+    let mut s = String::from("hello");
+    change(&mut s);
+
+    // mut references/borrowing can have just one references; this block of code will fails
+    let mut s = String::from("hello");
+
+    let r1 = &mut s;
+    //let _r2 = &mut s;
+
+    println!("{r1}, {{r2}}");
+
+    // We can create a new scope to create a new reference, but is not simultaneous
+    let mut s = String::from("hello");
+    {
+        let _r1 = &mut s;
+    } // r1 goes out of scope here, so we can make a new reference with no problems.
+    let _r2 = &mut s;
+
+    // we can not have mutable references while we have an immutable one
+    let /*mut*/ s = String::from("hello");
+
+    let r1 = &s; // no problem
+    let r2 = &s; // no problem
+    // let r3 = &mut s; // BIG PROBLEM
+
+    println!("{r1}, {r2}, and {{r3}}");
+
+    // FIX for mutable and immutable references
+    let mut s = String::from("hello");
+
+    let r1 = &s; // no problem
+    let r2 = &s; // no problem
+    println!("{r1} and {r2}");
+    // Variables r1 and r2 will not be used after this point.
+
+    let r3 = &mut s; // no problem
+    println!("{r3}");
+
+    // dangle
+    let _reference_to_nothing = no_dangle();
 } // this scope is now over, and `s` is not longer valid same with `s2`
 
 // when a variable goes out of scope Rust calls a function called `drop`; Rust calls `drop` automatically at the closing curly bracket
 
 // NOTE: C++ have the pattern Resource Acquisition Is Initialization (RAII). The drop function in Rust will be familiar to you if you’ve used RAII patterns.
 
-fn takes_ownership(some_string: String) { // some_string comes into scope
+fn takes_ownership(some_string: String) {
+    // some_string comes into scope
     println!("{some_string}");
 } // Here, some_string goes out of scope and `drop` is called. The backing
-  // memory is freed.
+// memory is freed.
 
-fn makes_copy(some_integer: i32) { // some_integer comes into scope
+fn makes_copy(some_integer: i32) {
+    // some_integer comes into scope
     println!("{some_integer}");
 } // Here, some_integer goes out of scope. Nothing special happens.
 
-fn gives_ownership() -> String {       // gives_ownership will move its
-                                       // return value into the function
-                                       // that calls it
+fn gives_ownership() -> String {
+    // gives_ownership will move its
+    // return value into the function
+    // that calls it
 
     let some_string = String::from("yours"); // some_string comes into scope
-    some_string                        // some_string is returned and
-                                       // moves out to the calling
-                                       // function
+    some_string // some_string is returned and
+    // moves out to the calling
+    // function
 }
 
 // This function takes a String and returns a String.
 fn takes_and_gives_back(a_string: String) -> String {
     // a_string comes into
     // scope
-    a_string  // a_string is returned and moves out to the calling function
+    a_string // a_string is returned and moves out to the calling function
 }
 
 fn calculate_length(s: String) -> (String, usize) {
     let length = s.len(); // len() returns the length of a String
     (s, length)
+}
+
+fn calculate_length_ref(s: &str) -> usize {
+    // s is a reference to a String
+    s.len()
+} // Here, s goes out of scope. But because s does not have ownership of what
+// it refers to, the String is not dropped.
+
+fn change(some_string: &mut String) {
+    some_string.push_str(", world");
+}
+
+// fn dangle() -> &String { // dangle returns a reference to a String
+
+//     let s = String::from("hello"); // s is a new String
+
+//     &s // we return a reference to the String, s
+// } // Here, s goes out of scope and is dropped, so its memory goes away.
+//   // Danger!
+
+fn no_dangle() -> String {
+    let s = String::from("hello");
+
+    s
 }
