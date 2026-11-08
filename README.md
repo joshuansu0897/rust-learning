@@ -6,11 +6,11 @@ October 31, 2026. I type every example by hand; AI is only my tutor.
 
 ## Progress
 
-**The Book:** 3 of 21 chapters done, Chapter 4 in progress
+**The Book:** 4 of 21 chapters done
 
 ```text
-Book       [███░░░░░░░░░░░░░░░░░]  3 / 21 chapters
-Rustlings  [████░░░░░░░░░░░░░░░░] 20 / 94 exercises
+Book       [████░░░░░░░░░░░░░░░░]  4 / 21 chapters
+Rustlings  [██████░░░░░░░░░░░░░░] 30 / 94 exercises
 ```
 
 | Ch | Chapter | Status |
@@ -18,8 +18,8 @@ Rustlings  [████░░░░░░░░░░░░░░░░] 20 / 9
 | 1 | [Getting Started](https://doc.rust-lang.org/book/ch01-00-getting-started.html) | ✅ |
 | 2 | [Programming a Guessing Game](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html) | ✅ |
 | 3 | [Common Programming Concepts](https://doc.rust-lang.org/book/ch03-00-common-programming-concepts.html) | ✅ |
-| 4 | [Understanding Ownership](https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html) | 📖 reading |
-| 5 | [Using Structs to Structure Related Data](https://doc.rust-lang.org/book/ch05-00-structs.html) | |
+| 4 | [Understanding Ownership](https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html) | ✅ |
+| 5 | [Using Structs to Structure Related Data](https://doc.rust-lang.org/book/ch05-00-structs.html) | ⏭️ next |
 | 6 | [Enums and Pattern Matching](https://doc.rust-lang.org/book/ch06-00-enums.html) | |
 | 7 | [Packages, Crates, and Modules](https://doc.rust-lang.org/book/ch07-00-managing-growing-projects-with-packages-crates-and-modules.html) | |
 | 8 | [Common Collections](https://doc.rust-lang.org/book/ch08-00-common-collections.html) | |
@@ -53,12 +53,15 @@ Folders are named `NN-chXX-name`: `NN` is the order I created them in and
 | 07 | [fah_to_cel](07-ch03-fah_to_cel) | [Ch 3 exercises](https://doc.rust-lang.org/book/ch03-05-control-flow.html#summary) | 2026-11-05 | Converting temperatures between Fahrenheit and Celsius |
 | 08 | [fibonacci](08-ch03-fibonacci) | [Ch 3 exercises](https://doc.rust-lang.org/book/ch03-05-control-flow.html#summary) | 2026-11-05 | Generating the nth Fibonacci number |
 | 09 | [christmas_carol_lyrics](09-ch03-christmas_carol_lyrics) | [Ch 3 exercises](https://doc.rust-lang.org/book/ch03-05-control-flow.html#summary) | 2026-11-05 | Printing "The Twelve Days of Christmas" with loops |
+| 10 | [ownership](10-ch04-ownership) | [4.1 What Is Ownership?](https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html), [4.2 References and Borrowing](https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html) | 2026-11-06 | Stack vs heap, move vs `Copy`, `clone`, `drop`, `&` and `&mut`, the borrowing rules, dangling references |
+| 11 | [slices](11-ch04-slices) | [4.3 The Slice Type](https://doc.rust-lang.org/book/ch04-03-slices.html) | 2026-11-08 | String slices, range shortcuts, `&str` as a parameter, why a slice beats a `usize` index |
+| 12 | [word_stats](12-ch04-word_stats) | Ch 4 practice project (mine, not from the Book) | 2026-11-08 | Reads phrases and prints the first word, the longest word and the word count, all as slices of the input |
 
 ## Rustlings
 
 [`rustlings/`](rustlings) holds my Rustlings exercises. Done so far: intro,
-variables, functions, if, quiz1, and primitive_types 1–3. Next up:
-primitive_types4.
+variables, functions, if, quiz1, primitive_types, vecs and move_semantics.
+Next up: structs.
 
 ## Running a project
 
@@ -77,5 +80,5 @@ Before each commit: `cargo fmt`, `cargo clippy`, `cargo test`.
 ## Branches
 
 - `master`: my code, exactly as I wrote it.
-- `recomendations`: a reviewed version of the Week 1 projects, with comments
-  explaining each change. See its `RECOMMENDATIONS.md`.
+- `recomendations`: a reviewed version of some projects (Week 1 and
+  `word_stats`), with comments explaining each change. See its `RECOMMENDATIONS.md`.
